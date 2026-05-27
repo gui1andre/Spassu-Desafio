@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="SpassuDesafio.Domain/SpassuDesafio.Domain.csproj" />
+  <Project Path="SpassuDesafio.API/SpassuDesafio.API.csproj" Id="fdc0c4e5-e3c7-4d6a-beda-535babc1a8b0" />
+  <Project Path="SpassuDesafio.Application/SpassuDesafio.Application.csproj" Id="f2dfe7ba-a9b7-4d33-a4fe-de28ad19c4be" />
+  <Project Path="SpassuDesafio.Infrastructure/SpassuDesafio.Infrastructure.csproj" Id="ad7141bb-53ee-4e26-a128-621b9780e36e" />
+  <Project Path="SpassuDesafio.Tests/SpassuDesafio.Tests.csproj" />
+</Solution>
