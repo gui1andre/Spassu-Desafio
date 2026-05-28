@@ -60,7 +60,8 @@ namespace SpassuDesafio.API.MIddleware
         private static ExceptionMapped MappedException(Exception e) => e switch
         {
             KeyNotFoundException => new(StatusCodes.Status404NotFound, "Recurso não localizado.", LogLevel.Warning),
-            InvalidOperationException => new(StatusCodes.Status400BadRequest, "Operação inválida.", LogLevel.Warning),
+            UnauthorizedAccessException => new(StatusCodes.Status401Unauthorized, "Acesso não autorizado.", LogLevel.Warning),
+            InvalidOperationException => new(StatusCodes.Status400BadRequest, e.Message, LogLevel.Warning),
             ArgumentException => new(StatusCodes.Status400BadRequest, "Argumento inválido.", LogLevel.Warning),
             _ => new(StatusCodes.Status500InternalServerError, "Erro interno do servidor.", LogLevel.Error)
         };

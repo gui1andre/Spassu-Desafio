@@ -28,7 +28,15 @@ namespace SpassuDesafio.API.Filters
 
             if (errors.Count > 0)
             {
-                context.Result = new BadRequestObjectResult(errors.Select(error => error.ErrorMessage));
+                var response = new
+                {
+                    title = "Erro de validação",
+                    statusCode = StatusCodes.Status400BadRequest,
+                    errors = errors.Select(error => error.ErrorMessage),
+                    instance = context.HttpContext.Request.Path.ToString()
+                };
+
+                context.Result = new BadRequestObjectResult(response);
                 return;
             }
 

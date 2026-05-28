@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpassuDesafio.Application.Pedido.DTO;
 using SpassuDesafio.Application.Pedido.Interfaces;
 
 namespace SpassuDesafio.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PedidoController : ControllerBase
