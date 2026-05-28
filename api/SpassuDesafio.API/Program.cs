@@ -13,6 +13,14 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<FluentValidationFilter>();
 });
 
+builder.Services.AddCors(c => c.AddPolicy(
+    "Politics",
+    p => p.WithOrigins("http://localhost:5173")
+    .AllowAnyMethod()
+    .AllowCredentials()
+    .AllowAnyHeader()
+    ));
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -47,7 +55,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
-
+app.UseCors("Politics");
 app.UseMiddleware<ExceptionHadnleMiddleware>();
 
 
