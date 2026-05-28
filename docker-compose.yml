@@ -1,0 +1,28 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: spassu-api
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - AllowedOrigins=http://localhost,http://localhost:80
+    volumes:
+      - sqlite_data:/app/data
+
+  web:
+    build:
+      context: ./presentation/SpassuDesafioFront
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8080/api
+    container_name: spassu-web
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  sqlite_data:

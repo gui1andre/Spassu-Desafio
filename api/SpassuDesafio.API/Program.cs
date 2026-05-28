@@ -1,8 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using SpassuDesafio.API.Filters;
 using SpassuDesafio.API.MIddleware;
 using SpassuDesafio.Application;
 using SpassuDesafio.Infrastructure;
+using SpassuDesafio.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,9 +15,11 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<FluentValidationFilter>();
 });
 
+var allowedOrigins = builder.Configuration.GetValue<string>("AllowedOrigins")?.Split(",") ?? new[] { "http://localhost:5173" };
+
 builder.Services.AddCors(c => c.AddPolicy(
     "Politics",
-    p => p.WithOrigins("http://localhost:5173")
+    p => p.WithOrigins(allowedOrigins)
     .AllowAnyMethod()
     .AllowCredentials()
     .AllowAnyHeader()
@@ -55,19 +59,35 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        if (context.Database.GetPendingMigrations().Any())
+        {
+            context.Database.Migrate();
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
+
 app.UseCors("Politics");
 app.UseMiddleware<ExceptionHadnleMiddleware>();
 
 
-if (app.Environment.IsDevelopment()) 
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction()) 
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 // Configure the HTTP request pipeline.
-
-app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
