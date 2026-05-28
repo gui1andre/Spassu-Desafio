@@ -46,4 +46,41 @@ public class IdentityManager : IIdentityManager
 
         return await _userManager.GetRolesAsync(user);
     }
+
+    public async Task SetRefreshTokenAsync(string email, string refreshToken, DateTime expiration)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null) return;
+
+        await _userManager.RemoveAuthenticationTokenAsync(user, "SpassuDesafio", "RefreshToken");
+        await _userManager.SetAuthenticationTokenAsync(user, "SpassuDesafio", "RefreshToken", refreshToken);
+
+        await _userManager.RemoveAuthenticationTokenAsync(user, "SpassuDesafio", "RefreshTokenExpiration");
+        await _userManager.SetAuthenticationTokenAsync(user, "SpassuDesafio", "RefreshTokenExpiration", expiration.ToString("o"));
+    }
+
+    public async Task<bool> ValidateRefreshTokenAsync(string email, string refreshToken)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null) return false;
+
+        var storedToken = await _userManager.GetAuthenticationTokenAsync(user, "SpassuDesafio", "RefreshToken");
+        var storedExpiration = await _userManager.GetAuthenticationTokenAsync(user, "SpassuDesafio", "RefreshTokenExpiration");
+
+        if (storedToken != refreshToken || string.IsNullOrEmpty(storedExpiration))
+        {
+            return false;
+        }
+
+        if (DateTime.TryParse(storedExpiration, null, System.Globalization.DateTimeStyles.RoundtripKind, out var expirationDate))
+        {
+            if (expirationDate < DateTime.UtcNow)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        return false;
+    }
 }

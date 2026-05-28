@@ -23,15 +23,41 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException("Usuário ou senha inválidos.");
         }
 
-        var roles = await _identityManager.GetUserRolesAsync(request.Email);
-        return _tokenService.GenerateToken(request.Email, roles);
+        return await GenerateAuthResponseAsync(request.Email);
     }
 
     public async Task<AuthResponseDTO> RegisterAsync(RegisterRequestDTO request)
     {
         await _identityManager.CreateUserAsync(request.Email, request.Password);
         
-        var roles = await _identityManager.GetUserRolesAsync(request.Email);
-        return _tokenService.GenerateToken(request.Email, roles);
+        return await GenerateAuthResponseAsync(request.Email);
+    }
+
+    public async Task<AuthResponseDTO> RefreshTokenAsync(string email, string refreshToken)
+    {
+        var isValid = await _identityManager.ValidateRefreshTokenAsync(email, refreshToken);
+
+        if (!isValid)
+        {
+            throw new UnauthorizedAccessException("Refresh Token inválido ou expirado.");
+        }
+
+        return await GenerateAuthResponseAsync(email);
+    }
+
+    private async Task<AuthResponseDTO> GenerateAuthResponseAsync(string email)
+    {
+        var roles = await _identityManager.GetUserRolesAsync(email);
+        var response = _tokenService.GenerateToken(email, roles);
+
+        var refreshToken = _tokenService.GenerateRefreshToken();
+        var refreshTokenExpiration = DateTime.UtcNow.AddDays(1);
+
+        await _identityManager.SetRefreshTokenAsync(email, refreshToken, refreshTokenExpiration);
+
+        response.RefreshToken = refreshToken;
+        response.RefreshTokenExpiration = refreshTokenExpiration;
+
+        return response;
     }
 }

@@ -47,4 +47,12 @@ public class TokenService : ITokenService
             Expiration = token.ValidTo
         };
     }
+
+    public string GenerateRefreshToken()
+    {
+        var randomNumber = new byte[64];
+        using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
+    }
 }
